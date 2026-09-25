@@ -25,7 +25,7 @@ func Signup(c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "पासवर्ड हैश करने में विफल"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password!"})
 		return
 	}
 
@@ -35,11 +35,11 @@ func Signup(c *gin.Context) {
 	}
 
 	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ईमेल पहले से मौजूद है!"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exists!"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "रजिस्ट्रेशन सफल रहा!"})
+	c.JSON(http.StatusCreated, gin.H{"message": "Registration successfull!"})
 }
 
 // 2. Login & Generate Token
@@ -56,12 +56,12 @@ func Login(c *gin.Context) {
 
 	var user models.User
 	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "गलत ईमेल या पासवर्ड"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "गलत ईमेल या पासवर्ड"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
@@ -72,7 +72,7 @@ func Login(c *gin.Context) {
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "टोकन बनाने में विफल"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
 		return
 	}
 
