@@ -42,7 +42,7 @@ func UpdateTask(c *gin.Context) {
 	id := c.Param("id") 
 
 	if err := config.DB.First(&task, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "टास्क नहीं मिला!"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found!"})
 		return
 	}
 
@@ -71,11 +71,11 @@ func DeleteTask(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := config.DB.First(&task, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "टास्क नहीं मिला!"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found!"})
 		return
 	}
 
 	config.DB.Delete(&task)
 
-	c.JSON(http.StatusOK, gin.H{"message": "टास्क सफलतापूर्वक डिलीट कर दिया गया!"})
+	c.JSON(http.StatusOK, gin.H{"message": "Task removed successfully!"})
 }
