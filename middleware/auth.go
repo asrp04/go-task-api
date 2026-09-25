@@ -13,14 +13,14 @@ func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "टोकन गायब है! कृपया लॉगिन करें।"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token not found! Please login।"})
 			c.Abort() 
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "गलत टोकन फॉर्मेट (Bearer Token आवश्यक है)"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format(Bearer Token is required!)"})
 			c.Abort()
 			return
 		}
@@ -35,7 +35,7 @@ func AuthRequired() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "अमान्य या एक्सपायर्ड टोकन!"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token!"})
 			c.Abort()
 			return
 		}
