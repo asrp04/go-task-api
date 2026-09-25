@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// 1. यूजर साइनअप (Register)
+// 1. Register
 func Signup(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email" binding:"required"`
@@ -23,7 +23,6 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	// पासवर्ड को हैश (Encrypt) करना
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "पासवर्ड हैश करने में विफल"})
@@ -35,7 +34,6 @@ func Signup(c *gin.Context) {
 		Password: string(hashedPassword),
 	}
 
-	// डेटाबेस में सेव करना
 	if err := config.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ईमेल पहले से मौजूद है!"})
 		return
@@ -44,7 +42,7 @@ func Signup(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "रजिस्ट्रेशन सफल रहा!"})
 }
 
-// 2. यूजर लॉगिन (Login & Generate Token)
+// 2. Login & Generate Token
 func Login(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email" binding:"required"`
@@ -57,19 +55,16 @@ func Login(c *gin.Context) {
 	}
 
 	var user models.User
-	// डेटाबेस में यूजर को ढूंढना
 	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "गलत ईमेल या पासवर्ड"})
 		return
 	}
 
-	// पासवर्ड मैच करना
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "गलत ईमेल या पासवर्ड"})
 		return
 	}
 
-	// JWT टोकन बनाना (जो 24 घंटे के लिए वैलिड होगा)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.ID,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
